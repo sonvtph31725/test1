@@ -45,18 +45,19 @@
 
   /* Nút chụp */
   #capture {
-    display: block;
-    width: 100%;
-    padding: clamp(12px, 2.5vh, 18px); /* auto theo màn hình */
-    font-size: clamp(14px, 2.5vw, 18px);
-    font-weight: bold;
-    color: #fff;
-    background: #ff6600;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-bottom: 1.5vh;
-  }
+  display: block;
+  width: 90%;          /* thu nhỏ còn 90% */
+  margin: 0 auto 1.5vh auto;  /* căn giữa, cách dưới 1.5vh */
+  padding: clamp(12px, 2.5vh, 18px);
+  font-size: clamp(14px, 2.5vw, 18px);
+  font-weight: bold;
+  color: #fff;
+  background: #ff6600;
+  border: none;
+  border-radius: 10px; /* bo góc riêng của nút */
+  cursor: pointer;
+}
+
 
   #capture:disabled { background: #aaa; }
 
