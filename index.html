@@ -9,22 +9,45 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
+      background: black;
+      overflow: hidden;
     }
 
-    /* Camera full màn hình */
+    /* Camera */
     #camera {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 75vh; /* nửa màn hình trên */
+      height: 100%;
       object-fit: cover;
-      display: block;
+      z-index: 1;
     }
 
-    /* Nút chụp */
+    /* Bottom panel */
+    .bottom-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 25vh; /* mặc định 1/4 màn hình */
+      background: #f8f8f8;
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+      padding: 15px;
+      z-index: 2;
+      overflow-y: auto;
+      transition: height 0.4s ease;
+    }
+
+    .bottom-panel.expanded {
+      height: 70vh; /* khi có kết quả thì đẩy lên */
+    }
+
+    /* Capture button */
     #capture {
       display: block;
-      width: 90%;
-      margin: 15px auto;
+      width: 100%;
       padding: 15px;
       font-size: 18px;
       font-weight: bold;
@@ -33,31 +56,28 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      margin-bottom: 10px;
     }
 
     #capture:disabled {
       background: #aaa;
     }
 
-    /* Phần kết quả */
-    #results {
-      padding: 15px;
-    }
-
+    /* Results */
     #results h3 {
-      margin-top: 0;
+      margin: 10px 0;
     }
 
     .item {
       background: white;
       border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 15px;
+      padding: 12px;
+      margin-bottom: 10px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     .item h3 {
-      margin: 0 0 8px;
+      margin: 0 0 6px;
       font-size: 16px;
       font-weight: bold;
     }
@@ -71,7 +91,7 @@
     .item img {
       max-width: 100%;
       border-radius: 8px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -79,16 +99,18 @@
 <body>
   <video id="camera" autoplay playsinline></video>
 
-  <button id="capture">📷 Chụp & Tìm kiếm</button>
-
-  <div id="results">
-    <h3>Kết quả:</h3>
+  <div class="bottom-panel" id="panel">
+    <button id="capture">📷 Chụp & Tìm kiếm</button>
+    <div id="results">
+      <h3>Kết quả:</h3>
+    </div>
   </div>
 
   <script>
     const video = document.getElementById("camera");
     const captureBtn = document.getElementById("capture");
     const resultsDiv = document.getElementById("results");
+    const panel = document.getElementById("panel");
 
     async function startCamera() {
       try {
@@ -104,7 +126,6 @@
       captureBtn.disabled = true;
       captureBtn.innerText = "⏳ Đang tìm...";
 
-      // Tạo canvas để chụp frame
       const canvas = document.createElement("canvas");
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -136,8 +157,11 @@
               </div>
             `;
           });
+          // khi có kết quả thì mở rộng panel
+          panel.classList.add("expanded");
         } else {
           resultsDiv.innerHTML += "<p>❌ Không tìm thấy sản phẩm nào.</p>";
+          panel.classList.add("expanded");
         }
 
       } catch (e) {
