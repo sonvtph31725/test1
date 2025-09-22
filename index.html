@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quét sản phẩm</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: black;
+      overflow: hidden;
+    }
+
+    /* Camera full màn hình */
+    #camera {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+
+    #overlay {
+      display: none;
+    }
+
+    /* Khung quét */
+    .scan-frame {
+      position: fixed;
+      top: 50%; left: 50%;
+      width: 250px; height: 250px;
+      transform: translate(-50%, -50%);
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      border-radius: 16px;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    /* Laser scan animation */
+    .scan-line {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      background: rgba(255, 0, 0, 0.8);
+      animation: scanMove 2s linear infinite;
+    }
+
+    @keyframes scanMove {
+      0% { top: 0; }
+      100% { top: 100%; }
+    }
+
+    /* Nút chụp */
+    .capture-btn {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      border: 5px solid white;
+      background: rgba(255, 255, 255, 0.3);
+      z-index: 3;
+      cursor: pointer;
+    }
+
+    /* Kết quả */
+    #results {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-height: 40%;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px 16px 0 0;
+      padding: 15px;
+      z-index: 4;
+      display: none;
+    }
+
+    #results h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .item {
+      background: white;
+      border-radius: 10px;
+      margin: 10px 0;
+      padding: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .item img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+    #overlay {
+  display: none;   /* Ẩn canvas overlay */
+}
+
+  </style>
+</head>
+
+<body>
+  <video id="camera" autoplay playsinline></video>
+  <canvas id="overlay"></canvas>
+
+  <!-- Khung quét -->
+  <div class="scan-frame">
+    <div class="scan-line"></div>
+  </div>
+
+  <!-- Nút chụp -->
+  <div class="capture-btn" id="capture"></div>
+
+  <!-- Kết quả -->
+  <div id="results"></div>
+
+  <script>
+    const video = document.getElementById("camera");
+    const canvas = document.getElementById("overlay");
+    const captureBtn = document.getElementById("capture");
+    const resultsDiv = document.getElementById("results");
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+      } catch (err) {
+        alert("Không thể mở camera: " + err);
+      }
+    }
+    startCamera();
+
+    captureBtn.addEventListener("click", async () => {
+      captureBtn.style.opacity = "0.5";
+
+      const ctx = canvas.getContext("2d");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg"));
+      const formData = new FormData();
+      formData.append("image", blob, "capture.jpg");
+      formData.append("k", "5");
+
+      try {
+        const API_URL = "https://von-sends-yale-hawaii.trycloudflare.com/api/search";
+        const resp = await fetch(API_URL, { method: "POST", body: formData });
+        if (!resp.ok) throw new Error("HTTP error! Status: " + resp.status);
+
+        const data = await resp.json();
+        console.log("Response data:", data);
+
+        resultsDiv.style.display = "block";
+        resultsDiv.innerHTML = "<h3>Kết quả tìm kiếm:</h3>";
+
+        // Hiển thị ảnh overlay
+        if (data.overlay_image) {
+          resultsDiv.innerHTML += `<img src="${data.overlay_image}" style="width:100%;border-radius:10px"/>`;
+        }
+
+        // Hiển thị sản phẩm
+        if (data.results && data.results.length > 0) {
+          data.results.forEach(item => {
+            resultsDiv.innerHTML += `
+              <div class="item">
+                <h3>${item.title}</h3>
+                <p>💰 Giá: ${item.price ?? "N/A"} đ</p>
+                <p>📊 Score: ${item.score.toFixed(2)}</p>
+                ${item.image_path ? `<img src="${item.image_path}" />` : ""}
+              </div>
+            `;
+          });
+        }
+
+      } catch (e) {
+        console.error("Fetch error:", e);
+        alert("Lỗi khi gọi API: " + e);
+      }
+
+      captureBtn.style.opacity = "1";
+    });
+  </script>
+</body>
+</html>
