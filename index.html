@@ -6,94 +6,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quét sản phẩm</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: black;
-      overflow: hidden;
-    }
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: black;
+    overflow: hidden;
+  }
 
-    /* Camera */
-    #camera {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: 1;
-    }
+  /* Camera full */
+  #camera {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
 
-    /* Bottom panel */
-    .bottom-panel {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 20vh; /* mặc định 1/4 màn hình */
-      background: #f8f8f8;
-      border-radius: 20px 20px 0 0;
-      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
-      padding: 15px;
-      z-index: 2;
-      overflow-y: auto;
-      transition: height 0.4s ease;
-    }
+  /* Panel dưới */
+  .bottom-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 22vh; /* mặc định chiếm ~1/4 */
+    background: #f8f8f8;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+    padding: 3vh 4vw;
+    z-index: 2;
+    overflow-y: auto;
+    transition: height 0.4s ease;
+  }
 
-    .bottom-panel.expanded {
-      height: 70vh; /* khi có kết quả thì đẩy lên */
-    }
+  .bottom-panel.expanded {
+    height: 68vh; /* mở rộng khi có kết quả */
+  }
 
-    /* Capture button */
-    #capture {
-      display: block;
-      width: 100%;
-      padding: 15px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #fff;
-      background: #ff6600;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
+  /* Nút chụp */
+  #capture {
+    display: block;
+    width: 100%;
+    padding: clamp(12px, 2.5vh, 18px); /* auto theo màn hình */
+    font-size: clamp(14px, 2.5vw, 18px);
+    font-weight: bold;
+    color: #fff;
+    background: #ff6600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 1.5vh;
+  }
 
-    #capture:disabled {
-      background: #aaa;
-    }
+  #capture:disabled { background: #aaa; }
 
-    /* Results */
-    #results h3 {
-      margin: 10px 0;
-    }
+  /* Kết quả */
+  #results h3 {
+    margin: 0 0 1vh;
+    font-size: clamp(14px, 2.5vw, 18px);
+  }
 
-    .item {
-      background: white;
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
+  .item {
+    background: white;
+    border-radius: 10px;
+    padding: 2.5vw;
+    margin-bottom: 1.5vh;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
 
-    .item h3 {
-      margin: 0 0 6px;
-      font-size: 16px;
-      font-weight: bold;
-    }
+  .item h3 {
+    margin: 0 0 0.5vh;
+    font-size: clamp(13px, 2.5vw, 16px);
+  }
 
-    .item p {
-      margin: 4px 0;
-      font-size: 14px;
-      color: #333;
-    }
+  .item p {
+    margin: 0.5vh 0;
+    font-size: clamp(12px, 2.2vw, 15px);
+  }
 
-    .item img {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-top: 8px;
-    }
-  </style>
+  .item img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 1vh;
+  }
+
+  /* Tối ưu riêng cho màn nhỏ */
+  @media (max-width: 480px) {
+    .bottom-panel { height: 25vh; }
+    .bottom-panel.expanded { height: 72vh; }
+  }
+</style>
+
 </head>
 
 <body>
