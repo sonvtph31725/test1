@@ -54,7 +54,7 @@
   color: #fff;
   background: #ff6600;
   border: none;
-  margin-top: 40px;
+  margin-top: 20px;
   border-radius: 10px;        /* Bo tròn riêng cho nút */
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Hiệu ứng nổi */
@@ -151,7 +151,7 @@
         const data = await resp.json();
         console.log("Response data:", data);
 
-        resultsDiv.innerHTML = "<h3>Kết quả:</h3>";
+        resultsDiv.innerHTML = "<h3></h3>";
 
         if (data.results && data.results.length > 0) {
           data.results.forEach(item => {
