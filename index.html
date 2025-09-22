@@ -9,94 +9,84 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: black;
-      overflow-x: hidden;
+      background: #f2f2f2;
     }
 
     /* Camera full màn hình */
     #camera {
-      position: fixed;
-      top: 0; left: 0;
       width: 100%;
-      height: 100%;
+      height: 50vh; /* nửa màn hình trên */
       object-fit: cover;
-      z-index: 1;
-    }
-
-    #overlay {
-      display: none;
+      display: block;
     }
 
     /* Nút chụp */
-    .capture-btn {
-      position: fixed;
-      bottom: 120px; /* đẩy lên cao hơn */
-      left: 50%;
-      transform: translateX(-50%);
-      width: 70px; height: 70px;
-      border-radius: 50%;
-      border: 5px solid white;
-      background: rgba(255, 255, 255, 0.3);
-      z-index: 3;
+    #capture {
+      display: block;
+      width: 90%;
+      margin: 15px auto;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      background: #ff6600;
+      border: none;
+      border-radius: 10px;
       cursor: pointer;
     }
 
-    /* Khoảng trắng để lướt */
-    .spacer {
-      height: 250px; /* chiều cao khoảng trắng để trượt */
-      background: transparent;
+    #capture:disabled {
+      background: #aaa;
     }
 
-    /* Kết quả */
+    /* Phần kết quả */
     #results {
-      position: relative;
-      width: 100%;
-      background: #f9f9f9;
-      border-radius: 16px 16px 0 0;
       padding: 15px;
-      z-index: 2;
-      margin-top: -50px; /* dính liền phần spacer */
     }
 
     #results h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
+      margin-top: 0;
     }
 
     .item {
       background: white;
       border-radius: 10px;
-      margin: 10px 0;
-      padding: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .item h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .item p {
+      margin: 4px 0;
+      font-size: 14px;
+      color: #333;
     }
 
     .item img {
       max-width: 100%;
       border-radius: 8px;
-      margin-top: 8px;
+      margin-top: 10px;
     }
   </style>
 </head>
 
 <body>
   <video id="camera" autoplay playsinline></video>
-  <canvas id="overlay"></canvas>
 
-  <!-- Nút chụp -->
-  <div class="capture-btn" id="capture"></div>
+  <button id="capture">📷 Chụp & Tìm kiếm</button>
 
-  <!-- Spacer tạo khoảng trống để cuộn -->
-  <div class="spacer"></div>
-
-  <!-- Kết quả -->
   <div id="results">
-    <h3>Kết quả sẽ hiển thị ở đây sau khi chụp</h3>
+    <h3>Kết quả:</h3>
   </div>
 
   <script>
     const video = document.getElementById("camera");
-    const canvas = document.getElementById("overlay");
     const captureBtn = document.getElementById("capture");
     const resultsDiv = document.getElementById("results");
 
@@ -111,12 +101,14 @@
     startCamera();
 
     captureBtn.addEventListener("click", async () => {
-      captureBtn.style.opacity = "0.5";
+      captureBtn.disabled = true;
+      captureBtn.innerText = "⏳ Đang tìm...";
 
-      const ctx = canvas.getContext("2d");
+      // Tạo canvas để chụp frame
+      const canvas = document.createElement("canvas");
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
 
       const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg"));
       const formData = new FormData();
@@ -131,14 +123,15 @@
         const data = await resp.json();
         console.log("Response data:", data);
 
-        resultsDiv.innerHTML = "<h3>Kết quả tìm kiếm:</h3>";
+        resultsDiv.innerHTML = "<h3>Kết quả:</h3>";
 
         if (data.results && data.results.length > 0) {
           data.results.forEach(item => {
             resultsDiv.innerHTML += `
               <div class="item">
-                <h3>${item.title}</h3>
+                <h3>Sản phẩm: ${item.title}</h3>
                 <p>💰 Giá: ${item.price ?? "N/A"} đ</p>
+                <p>📊 Score: ${item.score.toFixed(2)}</p>
                 ${item.image_path ? `<img src="${item.image_path}" />` : ""}
               </div>
             `;
@@ -147,15 +140,13 @@
           resultsDiv.innerHTML += "<p>❌ Không tìm thấy sản phẩm nào.</p>";
         }
 
-        // Tự động cuộn xuống kết quả
-        resultsDiv.scrollIntoView({ behavior: "smooth" });
-
       } catch (e) {
         console.error("Fetch error:", e);
         alert("Lỗi khi gọi API: " + e);
       }
 
-      captureBtn.style.opacity = "1";
+      captureBtn.disabled = false;
+      captureBtn.innerText = "📷 Chụp & Tìm kiếm";
     });
   </script>
 </body>
